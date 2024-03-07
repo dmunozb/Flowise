@@ -46,6 +46,14 @@ class Csv_DocumentLoaders implements INode {
                 optional: true
             },
             {
+                label: 'Column separator',
+                name: 'separator',
+                type: 'string',
+                description: 'Replace default coma seprator',
+                placeholder: 'Enter separator character',
+                optional: true
+            },
+            {
                 label: 'Additional Metadata',
                 name: 'metadata',
                 type: 'json',
@@ -119,6 +127,7 @@ class Csv_DocumentLoaders implements INode {
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
+        const separator = nodeData.inputs?.separator as string
         const columnName = nodeData.inputs?.columnName as string
         const metadata = nodeData.inputs?.metadata
         const output = nodeData.outputs?.output as string
@@ -133,9 +142,20 @@ class Csv_DocumentLoaders implements INode {
         for (const file of files) {
             if (!file) continue
 
+            const parsedColumnName = columnName.trim().length === 0 ? undefined : columnName.trim()
+
+            let csvOLoaderOptions = {}
+
+            if (separator) {
+                options = {
+                    column: parsedColumnName,
+                    separator
+                }
+            }
+
             const fileData = await this.getFileData(file, { chatflowid }, fromStorage)
             const blob = new Blob([fileData])
-            const loader = new CSVLoader(blob, columnName.trim().length === 0 ? undefined : columnName.trim())
+            const loader = new CSVLoader(blob, csvOLoaderOptions)
 
             // use spread instead of push, because it raises RangeError: Maximum call stack size exceeded when too many docs
             docs = [...docs, ...(await handleDocumentLoaderDocuments(loader, textSplitter))]
