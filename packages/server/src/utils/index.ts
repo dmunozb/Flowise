@@ -1782,6 +1782,7 @@ export const getSessionChatHistory = async (
     // Replace memory's sessionId/chatId
     if (memoryNode.data.inputs) {
         memoryNode.data.inputs.sessionId = sessionId
+        logger.debug(`[server]: IncomingOverrideConfig ${sessionId}`)
     }
 
     const initializedInstance: FlowiseMemory = await newNodeInstance.init(memoryNode.data, '', {
