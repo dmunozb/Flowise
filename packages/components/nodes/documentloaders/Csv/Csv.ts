@@ -47,6 +47,14 @@ class Csv_DocumentLoaders implements INode {
                 optional: true
             },
             {
+                label: 'Column separator',
+                name: 'separator',
+                type: 'string',
+                description: 'Replace default coma seprator',
+                placeholder: 'Enter separator character',
+                optional: true
+            },
+            {
                 label: 'Additional Metadata',
                 name: 'metadata',
                 type: 'json',
@@ -86,7 +94,10 @@ class Csv_DocumentLoaders implements INode {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const csvFileBase64 = nodeData.inputs?.csvFile as string
         const columnName = nodeData.inputs?.columnName as string
+        const separator = nodeData.inputs?.separator as string
         const metadata = nodeData.inputs?.metadata
+
+        const parsedColumnName = columnName.trim().length === 0 ? undefined : columnName.trim()
         const output = nodeData.outputs?.output as string
         const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
 
@@ -133,7 +144,16 @@ class Csv_DocumentLoaders implements INode {
                 splitDataURI.pop()
                 const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
                 const blob = new Blob([bf])
-                const loader = new CSVLoader(blob, columnName.trim().length === 0 ? undefined : columnName.trim())
+                let options: any = parsedColumnName
+
+                if (separator) {
+                    options = {
+                        column: parsedColumnName,
+                        separator
+                    }
+                }
+
+                const loader = new CSVLoader(blob, options)
 
                 if (textSplitter) {
                     docs = await loader.load()
