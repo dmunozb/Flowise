@@ -1,11 +1,13 @@
 import PropTypes from 'prop-types'
 import CodeMirror from '@uiw/react-codemirror'
 import { javascript } from '@codemirror/lang-javascript'
-import { json } from '@codemirror/lang-json'
 import { vscodeDark } from '@uiw/codemirror-theme-vscode'
 import { sublime } from '@uiw/codemirror-theme-sublime'
 import { EditorView } from '@codemirror/view'
 import { useTheme } from '@mui/material/styles'
+import { json } from '@codemirror/lang-json'
+import { jsonSchema } from 'codemirror-json-schema'
+import jsonMetaSchema from './schemas/jsonMetaSchema.json'
 
 export const CodeEditor = ({
     value,
@@ -41,13 +43,24 @@ export const CodeEditor = ({
                 : {}
     })
 
+    const getExtensions = (lang) => {
+        switch (lang) {
+            case 'js':
+                return [javascript({ jsx: true }), EditorView.lineWrapping, customStyle]
+            case 'jsonSchema':
+                return [jsonSchema(jsonMetaSchema), EditorView.lineWrapping, customStyle]
+            default:
+                return [json(), EditorView.lineWrapping, customStyle]
+        }
+    }
+
     return (
         <CodeMirror
             placeholder={placeholder}
             value={value}
             height={height ?? 'calc(100vh - 220px)'}
-            theme={theme === 'dark' ? (lang === 'js' ? vscodeDark : sublime) : 'none'}
-            extensions={[lang === 'js' ? javascript({ jsx: true }) : json(), EditorView.lineWrapping, customStyle]}
+            theme={theme === 'dark' ? (['js', 'json', 'jsonSchema'].includes(lang) ? vscodeDark : sublime) : 'none'}
+            extensions={getExtensions(lang)}
             onChange={onValueChange}
             readOnly={disabled}
             editable={!disabled}

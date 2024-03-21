@@ -35,6 +35,7 @@
         "axios": "1.7.9",
         "clsx": "^1.1.1",
         "dotenv": "^16.0.0",
+        "codemirror-json-schema": "^0.7.0",
         "flowise-embed": "latest",
         "flowise-embed-react": "latest",
         "flowise-react-json-view": "*",
